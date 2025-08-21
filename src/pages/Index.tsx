@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import PrototypeForm from '@/components/PrototypeForm';
 import PrototypePreview from '@/components/PrototypePreview';
@@ -32,22 +31,34 @@ const Index = () => {
   const generatePrototype = async (formData: FormData) => {
     setIsGenerating(true);
     
-    // Simulate AI processing
-    await new Promise(resolve => setTimeout(resolve, 3000));
-    
-    // Generate realistic prototype data based on input
-    const mockPrototype: PrototypeData = {
-      businessName: formData.businessName,
-      goal: formData.goal,
-      natureOfWork: formData.natureOfWork,
-      targetAudience: formData.targetAudience,
-      sections: generateSections(formData.goal),
-      insights: generateInsights(formData.natureOfWork),
-      techStack: ['React', 'TypeScript', 'Tailwind CSS', 'Framer Motion', 'Vite']
-    };
-    
-    setGeneratedPrototype(mockPrototype);
-    setIsGenerating(false);
+    try {
+      // Simulate proper async processing (in real implementation, this would be an API call)
+      await new Promise<void>((resolve) => {
+        // Use requestIdleCallback for better performance, fallback to setTimeout
+        if ('requestIdleCallback' in window) {
+          window.requestIdleCallback(() => resolve(), { timeout: 3000 });
+        } else {
+          setTimeout(() => resolve(), 3000);
+        }
+      });
+      
+      // Generate realistic prototype data based on input
+      const mockPrototype: PrototypeData = {
+        businessName: formData.businessName,
+        goal: formData.goal,
+        natureOfWork: formData.natureOfWork,
+        targetAudience: formData.targetAudience,
+        sections: generateSections(formData.goal),
+        insights: generateInsights(formData.natureOfWork),
+        techStack: ['React', 'TypeScript', 'Tailwind CSS', 'Framer Motion', 'Vite']
+      };
+      
+      setGeneratedPrototype(mockPrototype);
+    } catch (error) {
+      console.error('Error generating prototype:', error);
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   const generateSections = (goal: string): string[] => {

@@ -23,90 +23,167 @@ interface PrototypePreviewProps {
 const PrototypePreview: React.FC<PrototypePreviewProps> = ({ data }) => {
   const { toast } = useToast();
 
+  const generatePreviewUrl = (data: PrototypeData) => {
+    // Create a preview URL with the prototype data
+    const params = new URLSearchParams({
+      name: data.businessName,
+      type: data.goal,
+      work: data.natureOfWork,
+      audience: data.targetAudience
+    });
+    return `/preview?${params.toString()}`;
+  };
+
   const handlePreviewLive = () => {
-    // Simulate opening a live preview
     toast({
       title: "Live Preview Opening",
       description: "Your prototype is being prepared for live preview...",
     });
     
-    // In a real implementation, this would open a new window/tab with the live site
+    // Generate a proper preview URL with the prototype data
+    const previewUrl = generatePreviewUrl(data);
+    
     setTimeout(() => {
-      window.open('/', '_blank');
+      // Open the preview in a new window
+      const previewWindow = window.open(previewUrl, '_blank', 'width=1200,height=800');
+      
+      if (!previewWindow) {
+        toast({
+          title: "Popup Blocked",
+          description: "Please allow popups to view the live preview.",
+        });
+      }
     }, 1000);
   };
 
   const handleViewSourceCode = () => {
-    // Simulate viewing source code
     toast({
       title: "Source Code Ready",
       description: "Opening source code viewer...",
     });
     
-    // In a real implementation, this would show a modal or redirect to code view
     setTimeout(() => {
-      const codeContent = `// Generated React Component for ${data.businessName}
+      const codeContent = generateSourceCode(data);
+      
+      // Create a blob with the source code
+      const blob = new Blob([codeContent], { type: 'text/typescript' });
+      const url = URL.createObjectURL(blob);
+      
+      // Open in new window for viewing
+      const codeWindow = window.open('', '_blank');
+      if (codeWindow) {
+        codeWindow.document.write(`
+          <html>
+            <head>
+              <title>${data.businessName} - Source Code</title>
+              <style>
+                body { font-family: 'Courier New', monospace; margin: 20px; background: #1e1e1e; color: #d4d4d4; }
+                pre { white-space: pre-wrap; word-wrap: break-word; }
+                .header { background: #2d2d30; padding: 15px; margin: -20px -20px 20px -20px; }
+                .copy-btn { background: #007acc; color: white; border: none; padding: 8px 16px; cursor: pointer; }
+              </style>
+            </head>
+            <body>
+              <div class="header">
+                <h2>${data.businessName} - Generated React Component</h2>
+                <button class="copy-btn" onclick="navigator.clipboard.writeText(document.querySelector('pre').textContent)">Copy Code</button>
+              </div>
+              <pre>${codeContent}</pre>
+            </body>
+          </html>
+        `);
+      }
+      
+      URL.revokeObjectURL(url);
+    }, 1000);
+  };
+
+  const generateSourceCode = (data: PrototypeData): string => {
+    const componentName = data.businessName.replace(/\s+/g, '');
+    
+    return `// Generated React Component for ${data.businessName}
 import React from 'react';
 
-const ${data.businessName.replace(/\s+/g, '')}Page = () => {
+const ${componentName}Page = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Section */}
-      <section className="py-20">
-        <div className="container mx-auto px-4">
-          <h1 className="text-4xl font-bold mb-4">${data.businessName}</h1>
-          <p className="text-xl text-muted-foreground">${data.natureOfWork}</p>
+      <section className="py-20 bg-gradient-to-r from-primary/10 to-secondary/10">
+        <div className="container mx-auto px-4 text-center">
+          <h1 className="text-4xl md:text-6xl font-bold mb-6">
+            ${data.businessName}
+          </h1>
+          <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
+            Professional ${data.natureOfWork} services tailored for ${data.targetAudience}
+          </p>
+          <button className="bg-primary text-primary-foreground px-8 py-3 rounded-lg font-semibold hover:bg-primary/90 transition-colors">
+            Get Started
+          </button>
         </div>
       </section>
       
-      {/* Sections */}
       ${data.sections.map(section => `
+      {/* ${section} Section */}
       <section className="py-16">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold mb-8">${section}</h2>
-          {/* ${section} content goes here */}
+          <h2 className="text-3xl font-bold text-center mb-12">${section}</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {/* ${section} content goes here */}
+            <div className="p-6 border rounded-lg">
+              <h3 className="text-xl font-semibold mb-4">${section} Feature 1</h3>
+              <p className="text-muted-foreground">Description for ${section.toLowerCase()} feature.</p>
+            </div>
+          </div>
         </div>
       </section>`).join('')}
+      
+      {/* Footer */}
+      <footer className="bg-muted py-12">
+        <div className="container mx-auto px-4 text-center">
+          <p className="text-muted-foreground">© 2024 ${data.businessName}. All rights reserved.</p>
+        </div>
+      </footer>
     </div>
   );
 };
 
-export default ${data.businessName.replace(/\s+/g, '')}Page;`;
-      
-      console.log('Generated Source Code:', codeContent);
-      alert('Source code has been logged to console. In a full implementation, this would open in a code editor.');
-    }, 1000);
+export default ${componentName}Page;`;
   };
 
   const handleExportProject = () => {
-    // Simulate project export
     toast({
       title: "Exporting Project",
       description: "Preparing your project files for download...",
     });
 
     setTimeout(() => {
-      // Create a simple project structure as JSON
+      // Create a comprehensive project structure
       const projectData = {
         name: data.businessName,
         goal: data.goal,
+        metadata: {
+          generatedAt: new Date().toISOString(),
+          version: '1.0.0'
+        },
         structure: {
           sections: data.sections,
           techStack: data.techStack,
           insights: data.insights,
           targetAudience: data.targetAudience
         },
-        generated: new Date().toISOString()
+        sourceCode: generateSourceCode(data),
+        styles: generateTailwindConfig(data),
+        packageJson: generatePackageJson(data)
       };
 
-      // Create and download a JSON file
+      // Create and download a comprehensive JSON file
       const dataStr = JSON.stringify(projectData, null, 2);
       const dataBlob = new Blob([dataStr], { type: 'application/json' });
       const url = URL.createObjectURL(dataBlob);
       
       const link = document.createElement('a');
       link.href = url;
-      link.download = `${data.businessName.toLowerCase().replace(/\s+/g, '-')}-prototype.json`;
+      link.download = `${data.businessName.toLowerCase().replace(/\s+/g, '-')}-prototype-complete.json`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -114,9 +191,49 @@ export default ${data.businessName.replace(/\s+/g, '')}Page;`;
 
       toast({
         title: "Project Exported",
-        description: "Your prototype data has been downloaded successfully!",
+        description: "Your complete prototype project has been downloaded successfully!",
       });
     }, 2000);
+  };
+
+  const generateTailwindConfig = (data: PrototypeData): string => {
+    return `// Tailwind config for ${data.businessName}
+module.exports = {
+  content: ['./src/**/*.{js,ts,jsx,tsx}'],
+  theme: {
+    extend: {
+      colors: {
+        primary: 'hsl(var(--primary))',
+        secondary: 'hsl(var(--secondary))',
+      }
+    }
+  },
+  plugins: []
+}`;
+  };
+
+  const generatePackageJson = (data: PrototypeData): object => {
+    return {
+      name: data.businessName.toLowerCase().replace(/\s+/g, '-'),
+      version: '0.1.0',
+      private: true,
+      scripts: {
+        dev: 'vite',
+        build: 'tsc && vite build',
+        preview: 'vite preview'
+      },
+      dependencies: {
+        react: '^18.3.1',
+        'react-dom': '^18.3.1',
+        'react-router-dom': '^6.30.1'
+      },
+      devDependencies: {
+        '@types/react': '^18.3.1',
+        '@types/react-dom': '^18.3.1',
+        typescript: '^5.0.0',
+        vite: '^5.0.0'
+      }
+    };
   };
 
   return (
