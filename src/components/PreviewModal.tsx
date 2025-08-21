@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -26,7 +25,6 @@ const PreviewModal: React.FC<PreviewModalProps> = ({ isOpen, onClose, data }) =>
     
     return `
       <div class="min-h-screen bg-white">
-        <!-- Hero Section -->
         <section class="py-20 bg-gradient-to-r from-blue-50 to-purple-50">
           <div class="container mx-auto px-4 text-center">
             <h1 class="text-4xl md:text-6xl font-bold mb-6 text-gray-900">
@@ -42,7 +40,6 @@ const PreviewModal: React.FC<PreviewModalProps> = ({ isOpen, onClose, data }) =>
         </section>
         
         ${data.sections.map(section => `
-        <!-- ${section} Section -->
         <section class="py-16">
           <div class="container mx-auto px-4">
             <h2 class="text-3xl font-bold text-center mb-12 text-gray-900">${section}</h2>
@@ -63,7 +60,6 @@ const PreviewModal: React.FC<PreviewModalProps> = ({ isOpen, onClose, data }) =>
           </div>
         </section>`).join('')}
         
-        <!-- Footer -->
         <footer class="bg-gray-50 py-12">
           <div class="container mx-auto px-4 text-center">
             <p class="text-gray-600">© 2024 ${data.businessName}. All rights reserved.</p>
