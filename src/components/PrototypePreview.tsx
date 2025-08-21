@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Eye, Code, Download, Globe, Users, Lightbulb, CheckCircle } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 interface PrototypeData {
   businessName: string;
@@ -20,6 +21,104 @@ interface PrototypePreviewProps {
 }
 
 const PrototypePreview: React.FC<PrototypePreviewProps> = ({ data }) => {
+  const { toast } = useToast();
+
+  const handlePreviewLive = () => {
+    // Simulate opening a live preview
+    toast({
+      title: "Live Preview Opening",
+      description: "Your prototype is being prepared for live preview...",
+    });
+    
+    // In a real implementation, this would open a new window/tab with the live site
+    setTimeout(() => {
+      window.open('/', '_blank');
+    }, 1000);
+  };
+
+  const handleViewSourceCode = () => {
+    // Simulate viewing source code
+    toast({
+      title: "Source Code Ready",
+      description: "Opening source code viewer...",
+    });
+    
+    // In a real implementation, this would show a modal or redirect to code view
+    setTimeout(() => {
+      const codeContent = `// Generated React Component for ${data.businessName}
+import React from 'react';
+
+const ${data.businessName.replace(/\s+/g, '')}Page = () => {
+  return (
+    <div className="min-h-screen bg-background">
+      {/* Hero Section */}
+      <section className="py-20">
+        <div className="container mx-auto px-4">
+          <h1 className="text-4xl font-bold mb-4">${data.businessName}</h1>
+          <p className="text-xl text-muted-foreground">${data.natureOfWork}</p>
+        </div>
+      </section>
+      
+      {/* Sections */}
+      ${data.sections.map(section => `
+      <section className="py-16">
+        <div className="container mx-auto px-4">
+          <h2 className="text-3xl font-bold mb-8">${section}</h2>
+          {/* ${section} content goes here */}
+        </div>
+      </section>`).join('')}
+    </div>
+  );
+};
+
+export default ${data.businessName.replace(/\s+/g, '')}Page;`;
+      
+      console.log('Generated Source Code:', codeContent);
+      alert('Source code has been logged to console. In a full implementation, this would open in a code editor.');
+    }, 1000);
+  };
+
+  const handleExportProject = () => {
+    // Simulate project export
+    toast({
+      title: "Exporting Project",
+      description: "Preparing your project files for download...",
+    });
+
+    setTimeout(() => {
+      // Create a simple project structure as JSON
+      const projectData = {
+        name: data.businessName,
+        goal: data.goal,
+        structure: {
+          sections: data.sections,
+          techStack: data.techStack,
+          insights: data.insights,
+          targetAudience: data.targetAudience
+        },
+        generated: new Date().toISOString()
+      };
+
+      // Create and download a JSON file
+      const dataStr = JSON.stringify(projectData, null, 2);
+      const dataBlob = new Blob([dataStr], { type: 'application/json' });
+      const url = URL.createObjectURL(dataBlob);
+      
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${data.businessName.toLowerCase().replace(/\s+/g, '-')}-prototype.json`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      toast({
+        title: "Project Exported",
+        description: "Your prototype data has been downloaded successfully!",
+      });
+    }, 2000);
+  };
+
   return (
     <div className="w-full max-w-4xl mx-auto space-y-6">
       {/* Header */}
@@ -122,15 +221,26 @@ const PrototypePreview: React.FC<PrototypePreviewProps> = ({ data }) => {
       <Card className="gradient-card border-border/50">
         <CardContent className="pt-6">
           <div className="flex flex-wrap gap-4 justify-center">
-            <Button className="gradient-accent text-white font-semibold">
+            <Button 
+              onClick={handlePreviewLive}
+              className="gradient-accent text-white font-semibold"
+            >
               <Eye className="w-4 h-4 mr-2" />
               Preview Live Site
             </Button>
-            <Button variant="outline" className="border-ai-primary text-ai-primary hover:bg-ai-primary/10">
+            <Button 
+              onClick={handleViewSourceCode}
+              variant="outline" 
+              className="border-ai-primary text-ai-primary hover:bg-ai-primary/10"
+            >
               <Code className="w-4 h-4 mr-2" />
               View Source Code
             </Button>
-            <Button variant="outline" className="border-ai-secondary text-ai-secondary hover:bg-ai-secondary/10">
+            <Button 
+              onClick={handleExportProject}
+              variant="outline" 
+              className="border-ai-secondary text-ai-secondary hover:bg-ai-secondary/10"
+            >
               <Download className="w-4 h-4 mr-2" />
               Export Project
             </Button>
